@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DevOps Status Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0a0a0f;
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+
+    /* Animated background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 20% 50%, rgba(99, 102, 241, 0.08) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 20%, rgba(139, 92, 246, 0.06) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .header .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: #a5b4fc;
+      padding: 6px 16px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 20px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.5;
+        transform: scale(1.3);
+      }
+    }
+
+    .header h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #e2e8f0 0%, #a5b4fc 50%, #818cf8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+    }
+
+    .header p {
+      color: #64748b;
+      font-size: 1rem;
+    }
+
+    /* Status Banner */
+    .status-banner {
+      background: rgba(34, 197, 94, 0.08);
+      border: 1px solid rgba(34, 197, 94, 0.25);
+      border-radius: 16px;
+      padding: 20px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+    }
+
+    .status-banner .left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .status-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: rgba(34, 197, 94, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+
+    .status-banner h2 {
+      font-size: 1.1rem;
+      color: #22c55e;
+      font-weight: 600;
+    }
+
+    .status-banner p {
+      font-size: 0.85rem;
+      color: #64748b;
+      margin-top: 2px;
+    }
+
+    .last-updated {
+      font-size: 0.8rem;
+      color: #475569;
+    }
+
+    /* Cards Grid */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 16px;
+      padding: 24px;
+      transition: border-color 0.3s, transform 0.2s;
+    }
+
+    .card:hover {
+      border-color: rgba(99, 102, 241, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .card .card-label {
+      font-size: 0.75rem;
+      color: #475569;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 500;
+      margin-bottom: 10px;
+    }
+
+    .card .card-value {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #e2e8f0;
+    }
+
+    .card .card-sub {
+      font-size: 0.8rem;
+      color: #475569;
+      margin-top: 6px;
+    }
+
+    .card .version-badge {
+      display: inline-block;
+      background: rgba(99, 102, 241, 0.2);
+      color: #a5b4fc;
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      padding: 4px 12px;
+      border-radius: 100px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    /* Info Table */
+    .info-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .info-card h3 {
+      font-size: 0.85rem;
+      color: #475569;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 500;
+      margin-bottom: 20px;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .info-row:last-child {
+      border-bottom: none;
+    }
+
+    .info-row .key {
+      font-size: 0.88rem;
+      color: #64748b;
+    }
+
+    .info-row .val {
+      font-size: 0.88rem;
+      color: #e2e8f0;
+      font-weight: 500;
+    }
+
+    /* Endpoints */
+    .endpoints-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 32px;
+    }
+
+    .endpoints-card h3 {
+      font-size: 0.85rem;
+      color: #475569;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 500;
+      margin-bottom: 20px;
+    }
+
+    .endpoint {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .endpoint:last-child {
+      border-bottom: none;
+    }
+
+    .method {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 6px;
+      background: rgba(34, 197, 94, 0.15);
+      color: #22c55e;
+      border: 1px solid rgba(34, 197, 94, 0.2);
+      min-width: 42px;
+      text-align: center;
+    }
+
+    .endpoint-path {
+      font-family: monospace;
+      font-size: 0.9rem;
+      color: #a5b4fc;
+    }
+
+    .endpoint-desc {
+      margin-left: auto;
+      font-size: 0.8rem;
+      color: #475569;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      font-size: 0.8rem;
+      color: #334155;
+      padding-top: 16px;
+    }
+
+    .loading {
+      color: #475569;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+
+    <!-- Header -->
+    <div class="header">
+      <div class="badge">
+        <span class="dot"></span>
+        All Systems Operational
+      </div>
+      <h1>DevOps Status Dashboard</h1>
+      <p>Real-time monitoring • Auto-updated on every deploy</p>
+    </div>
+
+    <!-- Status Banner -->
+    <div class="status-banner">
+      <div class="left">
+        <div class="status-icon">✅</div>
+        <div>
+          <h2>System Online</h2>
+          <p>All services running normally</p>
+        </div>
+      </div>
+      <div class="last-updated">
+        Last checked: <span id="last-check">—</span>
+      </div>
+    </div>
+
+    <!-- Metric Cards -->
+    <div class="grid">
+      <div class="card">
+        <div class="card-label">App Version</div>
+        <div class="card-value"><span class="version-badge" id="version">—</span></div>
+        <div class="card-sub" id="app-name">Loading...</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Server Uptime</div>
+        <div class="card-value" id="uptime">—</div>
+        <div class="card-sub">Since last restart</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Memory Free</div>
+        <div class="card-value" id="mem-free">—</div>
+        <div class="card-sub" id="mem-total">of — total</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Environment</div>
+        <div class="card-value" style="font-size:1.1rem;" id="env">—</div>
+        <div class="card-sub" id="node-ver">Node: —</div>
+      </div>
+    </div>
+
+    <!-- System Info -->
+    <div class="info-card">
+      <h3>🖥️ System Info</h3>
+      <div class="info-row">
+        <span class="key">Hostname</span>
+        <span class="val" id="hostname">—</span>
+      </div>
+      <div class="info-row">
+        <span class="key">Platform</span>
+        <span class="val" id="platform">—</span>
+      </div>
+      <div class="info-row">
+        <span class="key">Author</span>
+        <span class="val" id="author">—</span>
+      </div>
+      <div class="info-row">
+        <span class="key">Timestamp</span>
+        <span class="val" id="timestamp">—</span>
+      </div>
+    </div>
+
+    <!-- API Endpoints -->
+    <div class="endpoints-card">
+      <h3>📡 API Endpoints</h3>
+      <div class="endpoint">
+        <span class="method">GET</span>
+        <span class="endpoint-path">/</span>
+        <span class="endpoint-desc">Status Dashboard (this page)</span>
+      </div>
+      <div class="endpoint">
+        <span class="method">GET</span>
+        <span class="endpoint-path">/health</span>
+        <span class="endpoint-desc">Health check JSON</span>
+      </div>
+      <div class="endpoint">
+        <span class="method">GET</span>
+        <span class="endpoint-path">/api/info</span>
+        <span class="endpoint-desc">Full system info JSON</span>
+      </div>
+    </div>
+
+    <!-- What's New Banner -->
+    <div
+      style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.25);border-radius:16px;padding:20px 28px;margin-bottom:32px;">
+      <div
+        style="font-size:0.75rem;color:#6366f1;text-transform:uppercase;letter-spacing:0.08em;font-weight:600;margin-bottom:10px;">
+        🆕 What's New</div>
+      <div style="font-size:0.95rem;color:#e2e8f0;font-weight:500;">v1.1.0 — Real-time Status Dashboard added</div>
+      <div style="font-size:0.82rem;color:#64748b;margin-top:6px;">Live system metrics • Auto-refresh every 5s • CI/CD
+        pipeline integrated</div>
+    </div>
+
+
+    Built by Abhijeet chaudhary &nbsp;·&nbsp; Node.js + Docker + GitHub Actions
+  </div>
+  </div>
+
+  <script>
+    async function loadData() {
+      try {
+        const res = await fetch('/api/info');
+        const data = await res.json();
+
+        document.getElementById('version').textContent = 'v' + data.version;
+        document.getElementById('app-name').textContent = data.app;
+        document.getElementById('uptime').textContent = data.uptime;
+        document.getElementById('mem-free').textContent = data.memory.free;
+        document.getElementById('mem-total').textContent = 'of ' + data.memory.total + ' total';
+        document.getElementById('env').textContent = data.environment;
+        document.getElementById('node-ver').textContent = 'Node: ' + data.node_version;
+        document.getElementById('hostname').textContent = data.hostname;
+        document.getElementById('platform').textContent = data.platform;
+        document.getElementById('author').textContent = data.author;
+        document.getElementById('timestamp').textContent = new Date(data.timestamp).toLocaleString();
+        document.getElementById('last-check').textContent = new Date().toLocaleTimeString();
+      } catch (e) {
+        console.error('Failed to load data', e);
+      }
+    }
+
+    loadData();
+    setInterval(loadData, 5000); // auto-refresh every 5 seconds
+  </script>
+</body>
+
+</html>
